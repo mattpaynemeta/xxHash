@@ -3824,66 +3824,66 @@ XXH64_update_bi_state(
         second->total_len += len;
 
         if (first->bufferedSize + len < 32) { /* fill in tmp buffer */
-        XXH64_load_into_buffer(first, p, len);
-        first->bufferedSize += (xxh_u32)len;
-        XXH64_load_into_buffer(second, p, len);
-        second->bufferedSize += (xxh_u32)len;
-        return XXH_OK;
+            XXH64_load_into_buffer(first, p, len);
+            first->bufferedSize += (xxh_u32)len;
+            XXH64_load_into_buffer(second, p, len);
+            second->bufferedSize += (xxh_u32)len;
+            return XXH_OK;
         }
 
         if (first->bufferedSize) { /* tmp buffer is full */
-        XXH64_load_into_buffer(first, p, 32 - first->bufferedSize);
-        XXH64_load_into_buffer(second, p, 32 - second->bufferedSize);
-        p += 32 - first->bufferedSize;
-        XXH64_update_state_from_full_buffer(first);
-        XXH64_update_state_from_full_buffer(second);
-        first->bufferedSize = 0;
-        second->bufferedSize = 0;
+            XXH64_load_into_buffer(first, p, 32 - first->bufferedSize);
+            XXH64_load_into_buffer(second, p, 32 - second->bufferedSize);
+            p += 32 - first->bufferedSize;
+            XXH64_update_state_from_full_buffer(first);
+            XXH64_update_state_from_full_buffer(second);
+            first->bufferedSize = 0;
+            second->bufferedSize = 0;
         }
 
         if (p + 32 <= bEnd) {
-        const xxh_u8* const limit = bEnd - 32;
-        xxh_u64 fv1 = first->acc[0];
-        xxh_u64 fv2 = first->acc[1];
-        xxh_u64 fv3 = first->acc[2];
-        xxh_u64 fv4 = first->acc[3];
+            const xxh_u8* const limit = bEnd - 32;
+            xxh_u64 fv1 = first->acc[0];
+            xxh_u64 fv2 = first->acc[1];
+            xxh_u64 fv3 = first->acc[2];
+            xxh_u64 fv4 = first->acc[3];
 
-        xxh_u64 sv1 = second->acc[0];
-        xxh_u64 sv2 = second->acc[1];
-        xxh_u64 sv3 = second->acc[2];
-        xxh_u64 sv4 = second->acc[3];
+            xxh_u64 sv1 = second->acc[0];
+            xxh_u64 sv2 = second->acc[1];
+            xxh_u64 sv3 = second->acc[2];
+            xxh_u64 sv4 = second->acc[3];
 
-        do {
-            fv1 = XXH64_round(fv1, XXH_readLE64(p));
-            sv1 = XXH64_round(sv1, XXH_readLE64(p));
-            p += 8;
-            fv2 = XXH64_round(fv2, XXH_readLE64(p));
-            sv2 = XXH64_round(sv2, XXH_readLE64(p));
-            p += 8;
-            fv3 = XXH64_round(fv3, XXH_readLE64(p));
-            sv3 = XXH64_round(sv3, XXH_readLE64(p));
-            p += 8;
-            fv4 = XXH64_round(fv4, XXH_readLE64(p));
-            sv4 = XXH64_round(sv4, XXH_readLE64(p));
-            p += 8;
-        } while (p <= limit);
+            do {
+                fv1 = XXH64_round(fv1, XXH_readLE64(p));
+                sv1 = XXH64_round(sv1, XXH_readLE64(p));
+                p += 8;
+                fv2 = XXH64_round(fv2, XXH_readLE64(p));
+                sv2 = XXH64_round(sv2, XXH_readLE64(p));
+                p += 8;
+                fv3 = XXH64_round(fv3, XXH_readLE64(p));
+                sv3 = XXH64_round(sv3, XXH_readLE64(p));
+                p += 8;
+                fv4 = XXH64_round(fv4, XXH_readLE64(p));
+                sv4 = XXH64_round(sv4, XXH_readLE64(p));
+                p += 8;
+            } while (p <= limit);
 
-        first->acc[0] = fv1;
-        first->acc[1] = fv2;
-        first->acc[2] = fv3;
-        first->acc[3] = fv4;
+            first->acc[0] = fv1;
+            first->acc[1] = fv2;
+            first->acc[2] = fv3;
+            first->acc[3] = fv4;
 
-        second->acc[0] = sv1;
-        second->acc[1] = sv2;
-        second->acc[2] = sv3;
-        second->acc[3] = sv4;
+            second->acc[0] = sv1;
+            second->acc[1] = sv2;
+            second->acc[2] = sv3;
+            second->acc[3] = sv4;
         }
 
         if (p < bEnd) {
-        XXH_memcpy(first->buffer, p, (size_t)(bEnd - p));
-        first->bufferedSize = (unsigned)(bEnd - p);
-        XXH_memcpy(second->buffer, p, (size_t)(bEnd - p));
-        second->bufferedSize = (unsigned)(bEnd - p);
+            XXH_memcpy(first->buffer, p, (size_t)(bEnd - p));
+            first->bufferedSize = (unsigned)(bEnd - p);
+            XXH_memcpy(second->buffer, p, (size_t)(bEnd - p));
+            second->bufferedSize = (unsigned)(bEnd - p);
         }
     }
 
