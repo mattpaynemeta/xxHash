@@ -3790,11 +3790,6 @@ XXH64_update (XXH_NOESCAPE XXH64_state_t* state, XXH_NOESCAPE const void* input,
     return XXH_OK;
 }
 
-static void
-XXH64_load_into_buffer(XXH64_state_t* state, xxh_u8* input, size_t len) {
-  XXH_memcpy(((xxh_u8*)state->buffer) + state->bufferedSize, input, len);
-}
-
 static void XXH64_update_state_from_full_buffer(XXH64_state_t* state) {
   state->acc[0] = XXH64_round(state->acc[0], XXH_readLE64(state->buffer + 0));
   state->acc[1] = XXH64_round(state->acc[1], XXH_readLE64(state->buffer + 1));
@@ -3807,34 +3802,33 @@ XXH_PUBLIC_API XXH_errorcode
 XXH64_update_bi_state(
     XXH_NOESCAPE XXH64_state_t* first,
     XXH_NOESCAPE XXH64_state_t* second,
-    const void* input,
+    XXH_NOESCAPE const void* input,
     size_t len) {
     if (input==NULL) {
             XXH_ASSERT(len == 0);
             return XXH_OK;
     }
 
-    {
-        XXH_ASSERT(first->bufferedSize == second->bufferedSize);
-
-        const xxh_u8* p = (const xxh_u8*)input;
+    {   const xxh_u8* p = (const xxh_u8*)input;
         const xxh_u8* const bEnd = p + len;
+        
+        XXH_ASSERT(first->bufferedSize == second->bufferedSize);
 
         first->total_len += len;
         second->total_len += len;
 
         if (first->bufferedSize + len < 32) { /* fill in tmp buffer */
-            XXH64_load_into_buffer(first, p, len);
-            first->bufferedSize += (xxh_u32)len;
-            XXH64_load_into_buffer(second, p, len);
-            second->bufferedSize += (xxh_u32)len;
+            XXH_memcpy(first->buffer + first->bufferedSize, input, len);
+            first->bufferedSize += (XXH32_hash_t)len;
+            XXH_memcpy(second->buffer + second->bufferedSize, input, len);
+            second->bufferedSize += (XXH32_hash_t)len;
             return XXH_OK;
         }
 
         if (first->bufferedSize) { /* tmp buffer is full */
-            XXH64_load_into_buffer(first, p, 32 - first->bufferedSize);
-            XXH64_load_into_buffer(second, p, 32 - second->bufferedSize);
-            p += 32 - first->bufferedSize;
+            XXH_memcpy(first->buffer + first->bufferedSize, p, sizeof(first->buffer) - first->bufferedSize);
+            XXH_memcpy(second->buffer + second->bufferedSize, p, sizeof(second->buffer) - second->bufferedSize);
+            p += sizeof(first->buffer) - first->bufferedSize;
             XXH64_update_state_from_full_buffer(first);
             XXH64_update_state_from_full_buffer(second);
             first->bufferedSize = 0;
